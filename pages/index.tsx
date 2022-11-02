@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
+import Button from '../components/Button'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
@@ -46,9 +47,15 @@ export default function Home() {
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
-        <input ref={inputRef} type="text" placeholder="name" />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="name"
+          className="placeholder:italic placeholder:text-slate-400 block bg-white w-96 border border-slate-300 rounded-md py-2 pl-3 pr-3 shadow-sm focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
+        />
 
         <button onClick={handleClick}>Add Jacket</button>
+        <Button onClick={handleClick}>Add Jacket</Button>
 
         <div>
           <h2>Product List</h2>
