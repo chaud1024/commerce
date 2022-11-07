@@ -22,22 +22,25 @@ const Products = () => {
       .then((data) => setCategories(data.items))
   }, [])
   //  마운트 되는 시점에 defendency 없이 조회되도록
+
   useEffect(() => {
-    fetch(`/api/get-products-count?category=${selectedCategory}`)
+    fetch(
+      `/api/get-products-count?category=${selectedCategory}&contains=${keyword}`
+    )
       .then((res) => res.json())
       .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-  }, [selectedCategory])
-  // count는 카테고리에 따라서 조회되도록
+  }, [selectedCategory, keyword])
+  // count는 카테고리에 따라서 조회되도록 + 검색키워드
 
   useEffect(() => {
     const skip = TAKE * (activePage - 1)
     fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}`
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${keyword}`
     )
       .then((res) => res.json())
       .then((data) => setProducts(data.items))
-  }, [activePage, selectedCategory, selectedFilter])
-  // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록
+  }, [activePage, selectedCategory, selectedFilter, keyword])
+  // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록 + 선택한 필터 + 검색키워드
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value)
