@@ -30,11 +30,11 @@ const Products = () => {
   useEffect(() => {
     const skip = TAKE * (activePage - 1)
     fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}`
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}`
     )
       .then((res) => res.json())
       .then((data) => setProducts(data.items))
-  }, [activePage, selectedCategory])
+  }, [activePage, selectedCategory, selectedFilter])
   // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록
 
   return (
