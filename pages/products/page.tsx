@@ -1,8 +1,9 @@
 import { categories, products } from '@prisma/client'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
-import { Pagination, SegmentedControl, Select } from '@mantine/core'
+import { Input, Pagination, SegmentedControl, Select } from '@mantine/core'
 import { CATEGORY_MAP, FILTERS, TAKE } from '../../constants/products'
+import { IconSearch } from '@tabler/icons'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
@@ -40,29 +41,35 @@ const Products = () => {
   return (
     <div className="px-36 mt-36 mb-36">
       <div className="flex justify-between">
-        <div className="mb-4">
-          <Select
-            value={selectedFilter}
-            onChange={setSelectedFilter}
-            data={FILTERS}
-          />
-        </div>
-        {categories && (
+        <div className="flex">
+          {categories && (
+            <div className="mb-4">
+              <SegmentedControl
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                data={[
+                  { label: 'ALL', value: '-1' },
+                  ...categories.map((category) => ({
+                    label: category.name,
+                    value: String(category.id),
+                  })),
+                ]}
+                color="dark"
+              />
+            </div>
+          )}
+
           <div className="mb-4">
-            <SegmentedControl
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-              data={[
-                { label: 'ALL', value: '-1' },
-                ...categories.map((category) => ({
-                  label: category.name,
-                  value: String(category.id),
-                })),
-              ]}
-              color="dark"
+            <Select
+              value={selectedFilter}
+              onChange={setSelectedFilter}
+              data={FILTERS}
             />
           </div>
-        )}
+        </div>
+        <div className="mb-4">
+          <Input icon={<IconSearch />} placeholder="Search items" />
+        </div>
       </div>
       {products && (
         <div className="grid grid-cols-3 gap-5">
