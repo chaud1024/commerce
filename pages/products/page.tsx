@@ -2,8 +2,7 @@ import { products } from '@prisma/client'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Pagination } from '@mantine/core'
-
-const TAKE = 9
+import { CATEGORY_MAP, TAKE } from '../../constants/products'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
@@ -31,20 +30,20 @@ const Products = () => {
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
-            <div key={item.id}>
+            <div key={item.id} style={{ maxWidth: 310 }}>
               <Image
                 className="rounded"
                 src={item.image_url ?? ''}
                 alt={item.name}
-                width={500}
-                height={300}
+                width={310}
+                height={390}
               />
               <div className="flex justify-between">
                 <span>{item.name}</span>
                 <span>{item.price.toLocaleString('ko-KR')} 원</span>
               </div>
               <span className="text-slate-400">
-                {item.category_id === 1 && '의류'}
+                {CATEGORY_MAP[item.category_id - 1]}
               </span>
             </div>
           ))}

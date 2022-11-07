@@ -1,8 +1,7 @@
 import { products } from '@prisma/client'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
-
-const TAKE = 9
+import { CATEGORY_MAP, TAKE } from '../../constants/products'
 
 const Products = () => {
   const [skip, setSkip] = useState(0)
@@ -43,7 +42,7 @@ const Products = () => {
                 <span>{item.price.toLocaleString('ko-KR')} 원</span>
               </div>
               <span className="text-slate-400">
-                {item.category_id === 1 && '의류'}
+                {CATEGORY_MAP[item.category_id - 1]}
               </span>
             </div>
           ))}
