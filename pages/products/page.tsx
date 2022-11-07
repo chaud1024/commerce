@@ -1,4 +1,4 @@
-import { products } from '@prisma/client'
+import { categories, products } from '@prisma/client'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Pagination } from '@mantine/core'
@@ -7,9 +7,13 @@ import { CATEGORY_MAP, TAKE } from '../../constants/products'
 const Products = () => {
   const [activePage, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [categories, setCategories] = useState<categories[]>([])
   const [products, setProducts] = useState<products[]>([])
 
   useEffect(() => {
+    fetch(`/api/get-categories`)
+      .then((res) => res.json())
+      .then((data) => setCategories(data.items))
     fetch(`/api/get-products-count`)
       .then((res) => res.json())
       .then((data) => setTotal(Math.ceil(data.items / TAKE)))
@@ -27,6 +31,10 @@ const Products = () => {
 
   return (
     <div className="px-36 mt-36 mb-36">
+      {categories &&
+        categories.map((category) => (
+          <div key={category.id}>{category.name}</div>
+        ))}
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
