@@ -1,8 +1,8 @@
 import { categories, products } from '@prisma/client'
 import Image from 'next/image'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Pagination, SegmentedControl } from '@mantine/core'
-import { CATEGORY_MAP, TAKE } from '../../constants/products'
+import React, { useEffect, useState } from 'react'
+import { Pagination, SegmentedControl, Select } from '@mantine/core'
+import { CATEGORY_MAP, FILTERS, TAKE } from '../../constants/products'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
@@ -10,6 +10,9 @@ const Products = () => {
   const [categories, setCategories] = useState<categories[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('-1')
   const [products, setProducts] = useState<products[]>([])
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(
+    FILTERS[0].value
+  )
 
   useEffect(() => {
     fetch(`/api/get-categories`)
@@ -36,22 +39,31 @@ const Products = () => {
 
   return (
     <div className="px-36 mt-36 mb-36">
-      {categories && (
+      <div className="flex justify-between">
         <div className="mb-4">
-          <SegmentedControl
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-            data={[
-              { label: 'ALL', value: '-1' },
-              ...categories.map((category) => ({
-                label: category.name,
-                value: String(category.id),
-              })),
-            ]}
-            color="dark"
+          <Select
+            value={selectedFilter}
+            onChange={setSelectedFilter}
+            data={FILTERS}
           />
         </div>
-      )}
+        {categories && (
+          <div className="mb-4">
+            <SegmentedControl
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              data={[
+                { label: 'ALL', value: '-1' },
+                ...categories.map((category) => ({
+                  label: category.name,
+                  value: String(category.id),
+                })),
+              ]}
+              color="dark"
+            />
+          </div>
+        )}
+      </div>
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
