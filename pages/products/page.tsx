@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Input, Pagination, SegmentedControl, Select } from '@mantine/core'
 import { CATEGORY_MAP, FILTERS, TAKE } from '../../constants/products'
 import { IconSearch } from '@tabler/icons'
+import useDebounce from '../../hooks/useDebounce'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
@@ -16,6 +17,8 @@ const Products = () => {
   )
   const [keyword, setKeyword] = useState('')
 
+  const debouncedKeyword = useDebounce<string>(keyword)
+
   useEffect(() => {
     fetch(`/api/get-categories`)
       .then((res) => res.json())
@@ -25,21 +28,21 @@ const Products = () => {
 
   useEffect(() => {
     fetch(
-      `/api/get-products-count?category=${selectedCategory}&contains=${keyword}`
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
     )
       .then((res) => res.json())
       .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-  }, [selectedCategory, keyword])
+  }, [selectedCategory, debouncedKeyword])
   // count는 카테고리에 따라서 조회되도록 + 검색키워드
 
   useEffect(() => {
     const skip = TAKE * (activePage - 1)
     fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${keyword}`
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
     )
       .then((res) => res.json())
       .then((data) => setProducts(data.items))
-  }, [activePage, selectedCategory, selectedFilter, keyword])
+  }, [activePage, selectedCategory, selectedFilter, debouncedKeyword])
   // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록 + 선택한 필터 + 검색키워드
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
