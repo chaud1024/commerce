@@ -14,6 +14,7 @@ const Products = () => {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(
     FILTERS[0].value
   )
+  const [keyword, setKeyword] = useState('')
 
   useEffect(() => {
     fetch(`/api/get-categories`)
@@ -37,6 +38,10 @@ const Products = () => {
       .then((data) => setProducts(data.items))
   }, [activePage, selectedCategory, selectedFilter])
   // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value)
+  }
 
   return (
     <div className="px-36 mt-36 mb-36">
@@ -68,7 +73,12 @@ const Products = () => {
           </div>
         </div>
         <div className="mb-4">
-          <Input icon={<IconSearch />} placeholder="Search items" />
+          <Input
+            icon={<IconSearch />}
+            placeholder="Search items"
+            value={keyword}
+            onChange={handleChange}
+          />
         </div>
       </div>
       {products && (
