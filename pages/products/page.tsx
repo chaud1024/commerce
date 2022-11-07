@@ -15,20 +15,24 @@ const Products = () => {
     fetch(`/api/get-categories`)
       .then((res) => res.json())
       .then((data) => setCategories(data.items))
-    fetch(`/api/get-products-count`)
+  }, [])
+  //  마운트 되는 시점에 defendency 없이 조회되도록
+  useEffect(() => {
+    fetch(`/api/get-products-count?category=${selectedCategory}`)
       .then((res) => res.json())
       .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-    fetch(`/api/get-products?skip=0&take=${TAKE}`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data.items))
-  }, [])
+  }, [selectedCategory])
+  // count는 카테고리에 따라서 조회되도록
 
   useEffect(() => {
     const skip = TAKE * (activePage - 1)
-    fetch(`/api/get-products?skip=${skip}&take=${TAKE}`)
+    fetch(
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}`
+    )
       .then((res) => res.json())
       .then((data) => setProducts(data.items))
-  }, [activePage])
+  }, [activePage, selectedCategory])
+  // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록
 
   return (
     <div className="px-36 mt-36 mb-36">
