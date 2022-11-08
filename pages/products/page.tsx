@@ -9,10 +9,10 @@ import { useQuery } from '@tanstack/react-query'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [categories, setCategories] = useState<categories[]>([])
+  // const [total, setTotal] = useState(0) // useEffect사용 get-products-count fetch
+  // const [categories, setCategories] = useState<categories[]>([]) // useEffect사용 get-categories fetch
   const [selectedCategory, setSelectedCategory] = useState<string>('-1')
-  // const [products, setProducts] = useState<products[]>([])
+  // const [products, setProducts] = useState<products[]>([]) // useEffect사용 get-products-skip~ fetch
   const [selectedFilter, setSelectedFilter] = useState<string | null>(
     FILTERS[0].value
   )
@@ -20,21 +20,43 @@ const Products = () => {
 
   const debouncedKeyword = useDebounce<string>(keyword)
 
-  useEffect(() => {
-    fetch(`/api/get-categories`)
-      .then((res) => res.json())
-      .then((data) => setCategories(data.items))
-  }, [])
+  // useEffect(() => {
+  //   fetch(`/api/get-categories`)
+  //     .then((res) => res.json())
+  //     .then((data) => setCategories(data.items))
+  // }, [])
   //  마운트 되는 시점에 defendency 없이 조회되도록
 
-  useEffect(() => {
-    fetch(
-      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
-    )
-      .then((res) => res.json())
-      .then((data) => setTotal(Math.ceil(data.items / TAKE)))
-  }, [selectedCategory, debouncedKeyword])
+  const { data: categories } = useQuery<
+    { items: categories[] },
+    unknown,
+    categories[]
+  >({
+    queryKey: [`/api/get-categories`],
+    queryFn: () => fetch(`/api/get-categories`).then((res) => res.json()),
+    select: (data) => data.items,
+  })
+
+  // useEffect(() => {
+  //   fetch(
+  //     `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setTotal(Math.ceil(data.items / TAKE)))
+  // }, [selectedCategory, debouncedKeyword])
   // count는 카테고리에 따라서 조회되도록 + 검색키워드
+
+  const { data: total } = useQuery({
+    queryKey: [
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`,
+    ],
+    queryFn: () =>
+      fetch(
+        `/api/get-products-count?category=${selectedCategory}&contains=${debouncedKeyword}`
+      )
+        .then((res) => res.json())
+        .then((data) => Math.ceil(data.items / TAKE)),
+  })
 
   // useEffect(() => {
   //   const skip = TAKE * (activePage - 1)
@@ -130,12 +152,14 @@ const Products = () => {
         </div>
       )}
       <div className="w-full flex mt-5">
-        <Pagination
-          className="m-auto"
-          page={activePage}
-          onChange={setPage}
-          total={total}
-        />
+        {total && (
+          <Pagination
+            className="m-auto"
+            page={activePage}
+            onChange={setPage}
+            total={total}
+          />
+        )}
       </div>
     </div>
   )
