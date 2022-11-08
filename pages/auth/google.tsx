@@ -4,9 +4,7 @@ const Google = () => {
     <div style={{ display: 'flex' }}>
       <GoogleLogin
         onSuccess={(credentialResponse) => {
-          fetch(
-            `/api/auth/get-token?credential=${credentialResponse.credential}`
-          )
+          fetch(`/api/auth/sign-in?credential=${credentialResponse.credential}`)
             .then((res) => res.json())
             .then((data) => console.log(data))
         }}
