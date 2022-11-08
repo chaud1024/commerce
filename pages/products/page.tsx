@@ -5,13 +5,14 @@ import { Input, Pagination, SegmentedControl, Select } from '@mantine/core'
 import { CATEGORY_MAP, FILTERS, TAKE } from '../../constants/products'
 import { IconSearch } from '@tabler/icons'
 import useDebounce from '../../hooks/useDebounce'
+import { useQuery } from '@tanstack/react-query'
 
 const Products = () => {
   const [activePage, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<categories[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('-1')
-  const [products, setProducts] = useState<products[]>([])
+  // const [products, setProducts] = useState<products[]>([])
   const [selectedFilter, setSelectedFilter] = useState<string | null>(
     FILTERS[0].value
   )
@@ -35,15 +36,34 @@ const Products = () => {
   }, [selectedCategory, debouncedKeyword])
   // count는 카테고리에 따라서 조회되도록 + 검색키워드
 
-  useEffect(() => {
-    const skip = TAKE * (activePage - 1)
-    fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
-    )
-      .then((res) => res.json())
-      .then((data) => setProducts(data.items))
-  }, [activePage, selectedCategory, selectedFilter, debouncedKeyword])
+  // useEffect(() => {
+  //   const skip = TAKE * (activePage - 1)
+  //   fetch(
+  //     `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setProducts(data.items))
+  // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword])
   // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록 + 선택한 필터 + 검색키워드
+
+  const { data: products } = useQuery<
+    { items: products[] },
+    unknown,
+    products[]
+  >({
+    queryKey: [
+      `/api/get-products?skip=${
+        TAKE * (activePage - 1)
+      }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`,
+    ],
+    queryFn: () =>
+      fetch(
+        `/api/get-products?skip=${
+          TAKE * (activePage - 1)
+        }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedKeyword}`
+      ).then((res) => res.json()),
+    select: (data) => data.items,
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value)
