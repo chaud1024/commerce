@@ -99,11 +99,7 @@ const Products = () => {
         ))}
       </div>
       {editorState != null && (
-        <CustomEditor
-          editorState={editorState}
-          onEditorStateChange={setEditorState}
-          readOnly
-        />
+        <CustomEditor editorState={editorState} readOnly />
       )}
     </>
   )

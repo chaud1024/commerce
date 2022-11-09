@@ -28,3 +28,28 @@ module.exports = {
     return config
   },
 }
+
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        port: '',
+        pathname: '/id/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.mytheresa.com',
+        port: '',
+        pathname: '/1088/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        port: '',
+        pathname: '/xiaolin/**',
+      },
+    ],
+  },
+}

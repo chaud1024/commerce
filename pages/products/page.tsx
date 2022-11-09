@@ -25,7 +25,7 @@ const Products = () => {
   //     .then((res) => res.json())
   //     .then((data) => setCategories(data.items))
   // }, [])
-  //  마운트 되는 시점에 defendency 없이 조회되도록
+  // 마운트 되는 시점에 defendency 없이 조회되도록
 
   const { data: categories } = useQuery<
     { items: categories[] },
@@ -67,9 +67,10 @@ const Products = () => {
   //     .then((data) => setProducts(data.items))
   // }, [activePage, selectedCategory, selectedFilter, debouncedKeyword])
   // products는 카테고리 혹은 액티브 페이지에 따라서 조회되도록 + 선택한 필터 + 검색키워드
+  // selectedCategory, selectedFilter, debouncedKeyword
 
   const { data: products } = useQuery<
-    { items: products[] },
+    { items: products[] }, // 이 products는 @prisma/client에서 가져온 products
     unknown,
     products[]
   >({
@@ -129,6 +130,7 @@ const Products = () => {
           />
         </div>
       </div>
+
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
@@ -138,7 +140,7 @@ const Products = () => {
                 src={item.image_url ?? ''}
                 alt={item.name}
                 width={310}
-                height={390}
+                height={400}
               />
               <div className="flex justify-between">
                 <span>{item.name}</span>

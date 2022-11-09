@@ -6,14 +6,14 @@ const productData: Prisma.productsCreateInput[] = Array.apply(
   null,
   Array(100)
 ).map((_, index) => ({
-  name: `Blue Jacket ${index + 1}`,
-  category_id: 1,
-  contents: `{"blocks":[{"key":"e71n1","text":"This is a Blue Jacket ${
+  name: `Dark Jean ${index + 1}`,
+  contents: `{"blocks":[{"key":"dha4m","text":"This is a dark jean ${
     index + 1
-  } ","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":0,"length":21,"style":"color-rgb(0,0,0)"},{"offset":0,"length":21,"style":"fontsize-medium"},{"offset":0,"length":21,"style":"fontfamily-ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+  }","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{}}`,
   image_url: `https://raw.githubusercontent.com/xiaolin/react-image-gallery/master/static/${
     (index + 1) % 10 === 0 ? 10 : (index + 1) % 10
   }.jpg`,
+  category_id: 1,
   price: Math.floor(Math.random() * (100000 - 20000) + 20000),
 }))
 
@@ -37,3 +37,5 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
+
+// yarn ts-node prisma/product.ts

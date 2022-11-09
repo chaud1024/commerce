@@ -9,7 +9,7 @@ export default function Home() {
   //   { id: string; properties: { id: string }[] }[]
   // >([])
   const [products, setProducts] = useState<
-    { id: string; name: string; createdAt: string; price: number }[]
+    { id: string; name: string; createdAt: string }[]
   >([])
 
   // useEffect(() => {

@@ -18,11 +18,8 @@ async function getProducts({
   contains: string
 }) {
   const containsCondition =
-    contains && contains !== ''
-      ? {
-          name: { contains: contains },
-        }
-      : undefined
+    contains && contains !== '' ? { name: { contains: contains } } : undefined
+
   const where =
     category && category !== -1
       ? {
@@ -41,7 +38,7 @@ async function getProducts({
       ...orderByCondition,
       where: where,
     })
-    console.log('getProducts response', response)
+    console.log('response', response)
     return response
   } catch (error) {
     console.error(error)
@@ -63,6 +60,7 @@ export default async function handler(
     res.status(400).json({ message: 'no skip or take' })
     return
   }
+
   try {
     const products = await getProducts({
       skip: Number(skip),

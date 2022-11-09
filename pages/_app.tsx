@@ -1,21 +1,26 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { QueryClient } from '@tanstack/query-core'
-import { GoogleOAuthProvider } from '@react-oauth/google'
-import { CLIENT_ID } from '../constants/googleAuth'
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { SessionProvider } from 'next-auth/react'
+// import { GoogleOAuthProvider } from '@react-oauth/google'
+// import { CLIENT_ID } from '../constants/googleAuth'
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({
+  Component,
+  pageProps: { session, ...pageProps },
+}: AppProps) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { staleTime: Infinity },
     },
   })
   return (
-    <GoogleOAuthProvider clientId={`${process.env.CLIENT_ID}`}>
+    // <GoogleOAuthProvider clientId={`${process.env.CLIENT_ID}`}>
+    <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />
       </QueryClientProvider>
-    </GoogleOAuthProvider>
+    </SessionProvider>
+    // </GoogleOAuthProvider>
   )
 }
