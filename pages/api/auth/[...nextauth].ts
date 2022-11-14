@@ -1,14 +1,30 @@
-import NextAuth from 'next-auth'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { PrismaClient } from '@prisma/client'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
-import { CLIENT_ID, CLIENT_SECRRET } from '../../../constants/googleAuth'
-export const authOptions = {
+import { CLIENT_ID, CLIENT_SECRET } from '../../../constants/googleAuth'
+
+const prisma = new PrismaClient()
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   // Configure one or more authentication providers
   providers: [
     GoogleProvider({
       clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRRET,
+      clientSecret: CLIENT_SECRET,
     }),
     // ...add more providers here
   ],
+  session: {
+    strategy: 'database',
+    maxAge: 1 * 24 * 60 * 60,
+  },
+  callbacks: {
+    session: async ({ session, user }) => {
+      session.id = user.id
+      return Promise.resolve(session)
+    },
+  },
 }
 export default NextAuth(authOptions)

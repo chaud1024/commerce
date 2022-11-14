@@ -6,8 +6,12 @@ import { CATEGORY_MAP, FILTERS, TAKE } from '../../constants/products'
 import { IconSearch } from '@tabler/icons'
 import useDebounce from '../../hooks/useDebounce'
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/dist/client/router'
 
 const Products = () => {
+  const router = useRouter()
+  const { data: session } = useSession()
   const [activePage, setPage] = useState(1)
   // const [total, setTotal] = useState(0) // useEffect사용 get-products-count fetch
   // const [categories, setCategories] = useState<categories[]>([]) // useEffect사용 get-categories fetch
@@ -94,6 +98,7 @@ const Products = () => {
 
   return (
     <div className="px-36 mt-36 mb-36">
+      {session && <div>안녕하세요, {session.user?.name} 님</div>}
       <div className="flex justify-between">
         <div className="flex">
           {categories && (
@@ -134,7 +139,11 @@ const Products = () => {
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
-            <div key={item.id} style={{ maxWidth: 310 }}>
+            <div
+              key={item.id}
+              style={{ maxWidth: 310 }}
+              onClick={() => router.push(`/products/${item.id}`)}
+            >
               <Image
                 className="rounded"
                 src={item.image_url ?? ''}

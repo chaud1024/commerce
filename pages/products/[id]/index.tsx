@@ -6,100 +6,181 @@ import React, { useState, useEffect } from 'react'
 import CustomEditor from '../../../components/Editor'
 import { useRouter } from 'next/router'
 import { EditorState, convertFromRaw, convertToRaw } from 'draft-js'
+import { GetServerSidePropsContext } from 'next/types'
+import { products } from '@prisma/client'
+import { format } from 'date-fns'
+import { CATEGORY_MAP } from '../../../constants/products'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@mantine/core'
+import { IconHeart, IconHeartbeat } from '@tabler/icons'
+import { useSession } from 'next-auth/react'
+import { json } from 'stream/consumers'
 
-const images = [
-  {
-    original: `https://picsum.photos/id/${1000 + 1}/1000/600/`,
-    thumbnail: `https://picsum.photos/id/${1000 + 1}/1000/600/`,
-  },
-  {
-    original: 'https://picsum.photos/id/1015/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1015/250/150/',
-  },
-  {
-    original: 'https://picsum.photos/id/1016/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1016/250/150/',
-  },
-  {
-    original: 'https://picsum.photos/id/1020/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1020/250/150/',
-  },
-  {
-    original: 'https://picsum.photos/id/1019/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1019/250/150/',
-  },
-  {
-    original: 'https://picsum.photos/id/1013/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1013/250/150/',
-  },
-  {
-    original: 'https://picsum.photos/id/1011/1000/600/',
-    thumbnail: 'https://picsum.photos/id/1011/250/150/',
-  },
-]
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const product = await fetch(
+    `http://localhost:3000/api/get-product?id=${context.params?.id}`
+  )
+    .then((res) => res.json())
+    .then((data) => data.items)
+  return {
+    props: {
+      product: { ...product, images: [product.image_url, product.image_url] },
+    },
+  }
+}
 
-const Products = () => {
+const WISHLIST_QUERY_KEY = '/api/get-wishlist'
+
+const Products = (props: { product: products & { images: string[] } }) => {
   //   return <ImageGallery items={images} />
   const [index, setIndex] = useState(0)
 
   const router = useRouter()
-  const { id } = router.query
-  const productId = id
-  const [editorState, setEditorState] = useState<EditorState | undefined>(
-    undefined
+  const queryClient = useQueryClient()
+  const { id: productId } = router.query
+  const [editorState] = useState<EditorState | undefined>(() =>
+    props.product.contents
+      ? EditorState.createWithContent(
+          convertFromRaw(JSON.parse(props.product.contents))
+        )
+      : EditorState.createEmpty()
   )
 
-  useEffect(() => {
-    if (productId != null) {
-      fetch(`/api/get-product?id=${productId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.items.contents) {
-            setEditorState(
-              EditorState.createWithContent(
-                convertFromRaw(JSON.parse(data.items.contents))
-              )
-            )
-          } else {
-            setEditorState(EditorState.createEmpty())
-          }
-        })
+  const { data: session } = useSession()
+
+  const { data: wishlist } = useQuery([WISHLIST_QUERY_KEY], () =>
+    fetch(WISHLIST_QUERY_KEY)
+      .then((res) => res.json())
+      .then((data) => data.items)
+  )
+
+  const { mutate } = useMutation<unknown, unknown, string, any>(
+    (productId) =>
+      fetch('/api/update-wishlist', {
+        method: 'POST',
+        body: JSON.stringify({ productId }),
+      })
+        .then((data) => data.json())
+        .then((res) => res.items),
+    {
+      onMutate: async (productId) => {
+        await queryClient.cancelQueries([WISHLIST_QUERY_KEY])
+
+        // snapshot the previous value
+        const previousValue = queryClient.getQueriesData([WISHLIST_QUERY_KEY])
+
+        // optimistically update to the new value
+        queryClient.setQueryData<string[]>([WISHLIST_QUERY_KEY], (old) =>
+          old
+            ? old.includes(String(productId))
+              ? old.filter((id) => id !== String(productId))
+              : old.concat(String(productId))
+            : []
+        )
+
+        // return a context object with the snapshotted value
+        return { previousValue }
+      },
+      onError: (error, _, context) => {
+        queryClient.setQueryData([WISHLIST_QUERY_KEY], context.previousValue)
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries([WISHLIST_QUERY_KEY])
+      },
     }
-  }, [productId])
+  )
+
+  const product = props.product
+
+  const isWished =
+    wishlist != null && productId != null ? wishlist.includes(productId) : false
 
   return (
     <>
-      <Carousel
-        autoplay
-        withoutControls
-        wrapAround
-        speed={10}
-        slideIndex={index}
-      >
-        {images.map((item) => (
-          <Image
-            key={item.original}
-            src={item.original}
-            alt="이미지"
-            width={1000}
-            height={600}
-            sizes="100vw"
-            style={{
-              width: '100%',
-              height: 'auto',
-            }}
-          />
-        ))}
-      </Carousel>
-      <div style={{ display: 'flex' }}>
-        {images.map((item, idx) => (
-          <div key={idx} onClick={() => setIndex(idx)}>
-            <Image src={item.original} alt="썸네일" width={100} height={60} />
+      {product != null && productId !== null ? (
+        <div className="p-24 flex flex-row">
+          <div style={{ maxWidth: 600, marginRight: 52 }}>
+            <Carousel withoutControls wrapAround speed={10} slideIndex={index}>
+              {product.images.map((url, idx) => (
+                <Image
+                  key={`${url}-carousel-${idx}`}
+                  src={url}
+                  alt="이미지"
+                  width={600}
+                  height={600}
+                  sizes="100vw"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                  }}
+                />
+              ))}
+            </Carousel>
+            <div className="flex space-x-4 mt-2">
+              {product.images.map(
+                (
+                  url,
+                  idx:
+                    | string
+                    | number
+                    | ((prevState: number) => number)
+                    | null
+                    | undefined
+                ) => (
+                  <div
+                    key={`${url}-thumb-${idx}`}
+                    onClick={() => setIndex(idx)}
+                  >
+                    <Image src={url} alt="썸네일" width={100} height={100} />
+                  </div>
+                )
+              )}
+            </div>
+            {editorState != null && (
+              <CustomEditor editorState={editorState} readOnly />
+            )}
           </div>
-        ))}
-      </div>
-      {editorState != null && (
-        <CustomEditor editorState={editorState} readOnly />
+          <div style={{ maxWidth: 600 }} className="flex flex-col space-y-6">
+            <div className="text-lg text-zinc-400">
+              {CATEGORY_MAP[product.category_id - 1]}
+            </div>
+            <div className="text-4xl font-semibold">{product.name}</div>
+            <div className="fext-lg">
+              {product.price.toLocaleString('ko-KR')} 원
+            </div>
+            {/* <div>{JSON.stringify(wishlist)}</div> */}
+            <Button
+              // loading={isLoading}
+              disabled={wishlist == null}
+              leftIcon={
+                isWished ? (
+                  <IconHeart size={20} stroke={1.5} />
+                ) : (
+                  <IconHeartbeat />
+                )
+              }
+              style={{ backgroundColor: isWished ? 'red' : 'grey' }}
+              radius="xl"
+              size="md"
+              onClick={() => {
+                if (session == null) {
+                  alert('로그인이 필요합니다')
+                  router.push('/auth/login')
+                  return
+                }
+                mutate(String(productId))
+              }}
+            >
+              찜하기
+            </Button>
+            <div className="text-sm text-zinc-300">
+              상품등록일 :{' '}
+              {format(new Date(product.createdAt), 'yyyy년 M월 dd일')}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div>로딩중</div>
       )}
     </>
   )
