@@ -16,6 +16,7 @@ import { IconHeart, IconHeartbeat, IconShoppingCart } from '@tabler/icons'
 import { useSession } from 'next-auth/react'
 import { json } from 'stream/consumers'
 import { CountControl } from '../../../components/CountControl'
+import { CART_QUERY_KEY } from '../../cart'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -98,31 +99,40 @@ const Products = (props: { product: products & { images: string[] } }) => {
     unknown,
     Omit<Cart, 'id' | 'userId'>,
     any
-  >((item) =>
-    fetch('/api/add-cart', {
-      method: 'POST',
-      body: JSON.stringify({ item }),
-    })
-      .then((data) => data.json())
-      .then((res) => res.items)
+  >(
+    (item) =>
+      fetch('/api/add-cart', {
+        method: 'POST',
+        body: JSON.stringify({ item }),
+      })
+        .then((data) => data.json())
+        .then((res) => res.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([CART_QUERY_KEY])
+      },
+      onSuccess: () => {
+        router.push('/cart')
+      },
+    }
   )
 
   const product = props.product
 
-  const validate = async (type: 'cart' | 'order') => {
+  const validate = (type: 'cart' | 'order') => {
     if (quantity == null) {
       alert('최소수량을 선택하세요.')
       return
     }
 
     // todo: 장바구니에 등록하는 기능 추가
-    await addCart({
-      productId: product.id,
-      quantity: quantity,
-      amount: product.price * quantity,
-    })
-
-    router.push('/cart')
+    if (type == 'cart') {
+      addCart({
+        productId: product.id,
+        quantity: quantity,
+        amount: product.price * quantity,
+      })
+    }
   }
 
   const isWished =
