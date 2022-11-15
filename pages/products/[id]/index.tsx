@@ -12,9 +12,10 @@ import { format } from 'date-fns'
 import { CATEGORY_MAP } from '../../../constants/products'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@mantine/core'
-import { IconHeart, IconHeartbeat } from '@tabler/icons'
+import { IconHeart, IconHeartbeat, IconShoppingCart } from '@tabler/icons'
 import { useSession } from 'next-auth/react'
 import { json } from 'stream/consumers'
+import { CountControl } from '../../../components/CountControl'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -34,10 +35,12 @@ const WISHLIST_QUERY_KEY = '/api/get-wishlist'
 const Products = (props: { product: products & { images: string[] } }) => {
   //   return <ImageGallery items={images} />
   const [index, setIndex] = useState(0)
+  const [quantity, setQuantity] = useState<number | undefined>(1)
 
   const router = useRouter()
   const queryClient = useQueryClient()
   const { id: productId } = router.query
+
   const [editorState] = useState<EditorState | undefined>(() =>
     props.product.contents
       ? EditorState.createWithContent(
@@ -90,6 +93,17 @@ const Products = (props: { product: products & { images: string[] } }) => {
     }
   )
 
+  const validate = (type: 'cart' | 'order') => {
+    if (quantity == null) {
+      alert('최소수량을 선택하세요.')
+      return
+    }
+
+    // todo: 장바구니에 등록하는 기능 추가
+
+    router.push('/cart')
+  }
+
   const product = props.product
 
   const isWished =
@@ -98,7 +112,7 @@ const Products = (props: { product: products & { images: string[] } }) => {
   return (
     <>
       {product != null && productId !== null ? (
-        <div className="p-24 flex flex-row">
+        <div className="flex flex-row">
           <div style={{ maxWidth: 600, marginRight: 52 }}>
             <Carousel withoutControls wrapAround speed={10} slideIndex={index}>
               {product.images.map((url, idx) => (
@@ -149,30 +163,53 @@ const Products = (props: { product: products & { images: string[] } }) => {
               {product.price.toLocaleString('ko-KR')} 원
             </div>
             {/* <div>{JSON.stringify(wishlist)}</div> */}
-            <Button
-              // loading={isLoading}
-              disabled={wishlist == null}
-              leftIcon={
-                isWished ? (
-                  <IconHeart size={20} stroke={1.5} />
-                ) : (
-                  <IconHeartbeat />
-                )
-              }
-              style={{ backgroundColor: isWished ? 'red' : 'grey' }}
-              radius="xl"
-              size="md"
-              onClick={() => {
-                if (session == null) {
-                  alert('로그인이 필요합니다')
-                  router.push('/auth/login')
-                  return
+
+            <div>
+              <span className="text-lg">수량</span>
+              <CountControl value={quantity} setValue={setQuantity} />
+            </div>
+            <div className="flex space-x-3">
+              <Button
+                leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
+                style={{ backgroundColor: 'black' }}
+                radius="xl"
+                size="md"
+                onClick={() => {
+                  if (session == null) {
+                    alert('로그인이 필요합니다')
+                    router.push('/auth/login')
+                    return
+                  }
+                  validate('cart')
+                }}
+              >
+                장바구니
+              </Button>
+              <Button
+                // loading={isLoading}
+                disabled={wishlist == null}
+                leftIcon={
+                  isWished ? (
+                    <IconHeart size={20} stroke={1.5} />
+                  ) : (
+                    <IconHeartbeat />
+                  )
                 }
-                mutate(String(productId))
-              }}
-            >
-              찜하기
-            </Button>
+                style={{ backgroundColor: isWished ? 'red' : 'grey' }}
+                radius="xl"
+                size="md"
+                onClick={() => {
+                  if (session == null) {
+                    alert('로그인이 필요합니다')
+                    router.push('/auth/login')
+                    return
+                  }
+                  mutate(String(productId))
+                }}
+              >
+                찜하기
+              </Button>
+            </div>
             <div className="text-sm text-zinc-300">
               상품등록일 :{' '}
               {format(new Date(product.createdAt), 'yyyy년 M월 dd일')}
