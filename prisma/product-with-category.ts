@@ -467,4 +467,4 @@ main()
     process.exit(1)
   })
 
-// yarn ts-node prisma/product.ts(해당파일명)
+// yarn ts-node prisma/product-with-category.ts(해당파일명)

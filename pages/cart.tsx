@@ -1,65 +1,51 @@
 import styled from '@emotion/styled'
-import { Button, Divider } from '@mantine/core'
-import { products } from '@prisma/client'
-import { IconRefresh, IconShoppingCart, IconX } from '@tabler/icons'
+import { Button } from '@mantine/core'
+import { Cart, products } from '@prisma/client'
+import { IconRefresh, IconX } from '@tabler/icons'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
-import { Router, useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import React, { useState, useEffect, useMemo } from 'react'
 import { CountControl } from '../components/CountControl'
 import { CATEGORY_MAP } from '../constants/products'
 
-interface CartItem {
+interface CartItem extends Cart {
   name: string
-  productId: number
   price: number
-  quantity: number
-  amount: number
   image_url: string
 }
 
-const Cart = () => {
+const CartPage = () => {
   const router = useRouter()
-  const [cartData, setCartData] = useState<CartItem[]>([])
 
-  const deliveryFee = 5000
+  const { data } = useQuery<{ items: CartItem[] }, unknown, CartItem[]>({
+    queryKey: [`/api/get-cart`],
+    queryFn: () =>
+      fetch(`/api/get-cart`)
+        .then((res) => res.json())
+        .then((data) => data.items),
+  })
+
+  const deliveryFee = data && data.length > 0 ? 0 : 5000
   const discount = 0
 
   const totalAmount = useMemo(() => {
-    return cartData
+    if (data == null) {
+      return 0
+    }
+    return data
       .map((item) => item.amount)
       .reduce((prev, curr) => prev + curr, 0)
-  }, [cartData])
+  }, [data])
 
   const totalQuantity = useMemo(() => {
-    return cartData
+    if (data == null) {
+      return 0
+    }
+    return data
       .map((item) => item.quantity)
       .reduce((prev, curr) => prev + curr, 0)
-  }, [cartData])
-
-  useEffect(() => {
-    const mockData = [
-      {
-        name: '플러피 캡',
-        productId: 37,
-        price: 20000,
-        quantity: 2,
-        amount: 40000,
-        image_url:
-          'https://img.mytheresa.com/1088/1088/66/jpeg/catalog/product/29/P00726938_b1.jpg',
-      },
-      {
-        name: '웜 후디',
-        productId: 46,
-        price: 20000,
-        quantity: 1,
-        amount: 20000,
-        image_url:
-          'https://img.mytheresa.com/1088/1088/66/jpeg/catalog/product/2e/P00692695.jpg',
-      },
-    ]
-    setCartData(mockData)
-  }, [])
+  }, [data])
 
   const { data: products } = useQuery<
     { items: products[] }, // 이 products는 @prisma/client에서 가져온 products
@@ -75,16 +61,16 @@ const Cart = () => {
   const handleOrder = () => {
     // todo: 구매하기 기능 구현
     alert(`${totalQuantity}개의 상품을 결제합니다.`)
-    console.log(JSON.stringify(cartData))
+    console.log(JSON.stringify(data))
   }
 
   return (
     <div>
-      <span className="text-2xl mb-3">cart ({cartData.length})개</span>
+      <span className="text-2xl mb-3">cart ({data ? data.length : 0})개</span>
       <div className="flex">
         <div className="w-full px-4 space-y-4">
-          {cartData?.length > 0 ? (
-            cartData.map((item, idx) => <Item key={idx} {...item} />)
+          {data && data.length > 0 ? (
+            data.map((item, idx) => <Item key={idx} {...item} />)
           ) : (
             <div>장바구니에 아무것도 없습니다.</div>
           )}
@@ -158,7 +144,7 @@ const Cart = () => {
   )
 }
 
-export default Cart
+export default CartPage
 
 const Item = (props: CartItem) => {
   const [quantity, setQuantity] = useState<number | undefined>(props.quantity)
