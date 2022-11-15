@@ -150,6 +150,8 @@ const Home = () => {
                 alt={item.name}
                 width={310}
                 height={400}
+                placeholder="blur"
+                blurDataURL="data:iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNU3woAAQkA3v5vIdoAAAAASUVORK5CYII="
               />
               <div className="flex justify-between">
                 <span>{item.name}</span>
