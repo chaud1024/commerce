@@ -71,6 +71,12 @@ const MyPage = () => {
 export default MyPage
 
 const DetailItem = (props: OrderDetail) => {
+  const handlePayment = () => {
+    alert('결제를 진행합니다.')
+  }
+  const handleDelete = () => {
+    alert('해당 주문을 삭제합니다.')
+  }
   return (
     <div
       className="w-full flex flex-col p-4 "
@@ -80,11 +86,11 @@ const DetailItem = (props: OrderDetail) => {
         <Badge color={props.status === 0 ? 'red' : ''}>
           {ORDER_STATUS_MAP[props.status + 1]}
         </Badge>
-        <IconX className="ml-auto" />
+        <IconX className="ml-auto" onClick={handleDelete} />
       </div>
       <div>
         {props.orderItems.map((orderItem, idx) => (
-          <Item key={idx} {...orderItem} />
+          <Item key={idx} {...orderItem} status={props.status} />
         ))}
       </div>
       <div className="flex mt-4">
@@ -110,7 +116,10 @@ const DetailItem = (props: OrderDetail) => {
             주문일자 :{' '}
             {format(new Date(props.createdAt), 'yyyy년 M월 dd일 HH:mm:ss')}
           </span>
-          <Button style={{ backgroundColor: 'black', color: 'white' }}>
+          <Button
+            style={{ backgroundColor: 'black', color: 'white' }}
+            onClick={handlePayment}
+          >
             결제처리
           </Button>
         </div>
@@ -119,7 +128,7 @@ const DetailItem = (props: OrderDetail) => {
   )
 }
 
-const Item = (props: OrderItemDetail) => {
+const Item = (props: OrderItemDetail & { status: number }) => {
   const [quantity, setQuantity] = useState<number | undefined>(props.quantity)
   const [itemAmount, setItemAmount] = useState<number>(props.quantity)
   const router = useRouter()
@@ -129,6 +138,10 @@ const Item = (props: OrderItemDetail) => {
       setItemAmount(quantity * props.price)
     }
   }, [quantity, props.price])
+
+  const handleComment = () => {
+    router.push(`/comment/edit?orderItemId=${props.id}`)
+  }
 
   return (
     <div className="w-full flex p-4 ">
@@ -148,8 +161,20 @@ const Item = (props: OrderItemDetail) => {
           <CountControl value={quantity} setValue={setQuantity} />
         </div>
       </div>
-      <div className="flex ml-auto space-x-4">
+      <div className="flex flex-col ml-auto space-x-4">
         <div>{itemAmount.toLocaleString('ko-kr')} 원</div>
+        {
+          <Button
+            style={{
+              backgroundColor: 'black',
+              color: 'white',
+              marginTop: 'auto',
+            }}
+            onClick={handleComment}
+          >
+            후기작성
+          </Button>
+        }
       </div>
     </div>
   )

@@ -1,9 +1,9 @@
-import React, { Dispatch, SetStateAction } from 'react'
-import dynamic from 'next/dynamic'
-import { EditorProps, EditorState } from 'react-draft-wysiwyg'
-// import { EditorState } from 'draft-js'
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import styled from '@emotion/styled'
+import { EditorState } from 'draft-js'
+import dynamic from 'next/dynamic'
+import React, { Dispatch, SetStateAction } from 'react'
+import { EditorProps } from 'react-draft-wysiwyg'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import Button from './Button'
 
 const Editor = dynamic<EditorProps>(
@@ -13,10 +13,12 @@ const Editor = dynamic<EditorProps>(
   }
 )
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ readOnly: boolean }>`
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
+  ${(porops) =>
+    porops.readOnly ? '' : 'border: 1px solid black; border-radius: 8px;'}
 `
 
 const CustomEditor = ({
@@ -31,7 +33,7 @@ const CustomEditor = ({
   onSave: () => void
 }) => {
   return (
-    <Wrapper>
+    <Wrapper readOnly={readOnly}>
       <Editor
         readOnly={readOnly}
         editorState={editorState}
