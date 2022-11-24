@@ -13,9 +13,9 @@ const Editor = dynamic<EditorProps>(
   }
 )
 
-const Wrapper = styled.div<{ readOnly: boolean }>`
+const Wrapper = styled.div<{ readOnly: boolean; noPadding: boolean }>`
   width: 100%;
-  padding: 20px;
+  ${(props) => (props.noPadding ? '' : 'padding: 20px;')}
   box-sizing: border-box;
   ${(porops) =>
     porops.readOnly ? '' : 'border: 1px solid black; border-radius: 8px;'}
@@ -24,16 +24,18 @@ const Wrapper = styled.div<{ readOnly: boolean }>`
 const CustomEditor = ({
   editorState,
   readOnly = false,
+  noPadding = false,
   onEditorStateChange,
   onSave,
 }: {
   editorState: EditorState
   readOnly?: boolean
+  noPadding?: boolean
   onEditorStateChange?: Dispatch<SetStateAction<EditorState | undefined>>
   onSave: () => void
 }) => {
   return (
-    <Wrapper readOnly={readOnly}>
+    <Wrapper readOnly={readOnly} noPadding={noPadding}>
       <Editor
         readOnly={readOnly}
         editorState={editorState}

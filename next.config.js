@@ -7,6 +7,7 @@ const nextConfig = {
       'picsum.photos',
       'raw.githubusercontent.com',
       'img.mytheresa.com',
+      'i.ibb.co',
     ],
   },
   compiler: {
@@ -35,26 +36,22 @@ module.exports = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
-        pathname: '/id/**',
       },
       {
         protocol: 'https',
         hostname: 'img.mytheresa.com',
-        port: '',
-        pathname: '/1088/**',
       },
       {
         protocol: 'https',
         hostname: 'raw.githubusercontent.com',
-        port: '',
-        pathname: '/xiaolin/**',
       },
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/a/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
       },
     ],
   },
